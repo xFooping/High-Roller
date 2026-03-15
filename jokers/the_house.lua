@@ -132,7 +132,7 @@ SMODS.Joker {
         name = "The Natural",
         text = {
             "If {C:attention}no discards{} are used,",
-            "permanently gain {C:chips}+10 Chips{}",
+            "permanently gain {C:chips}+50 Chips{}",
             "{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips)"
         }
     },
@@ -151,9 +151,9 @@ SMODS.Joker {
             card.ability.extra.clean = true  -- reset for next round regardless
 
             if was_clean then
-                card.ability.extra.chips = card.ability.extra.chips + 10
+                card.ability.extra.chips = card.ability.extra.chips + 50
                 return {
-                    message = "+10 Chips",
+                    message = "+50 Chips",
                     colour  = G.C.CHIPS
                 }
             end
