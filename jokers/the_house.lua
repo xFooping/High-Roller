@@ -521,3 +521,84 @@ SMODS.Joker {
         end
     end
 }
+
+-- Specimen
+-- WORK IN PROGRESS: Works perfectly on paper, but the splash text shows exact value copied instead of "half value"
+SMODS.Joker {
+    key              = "specimen",
+    atlas            = "hr_jokers",
+    pos              = { x = 7, y = 1 },
+    rarity           = 2,
+    cost             = 6,
+    blueprint_compat = false,
+    discovered       = true,
+
+    loc_txt = {
+        name = "Specimen",
+        text = {
+            "Copies the effect of the",
+            "{C:attention}Joker to the left{}",
+            "at {C:red}half{} value",
+            "{C:inactive}(#1#)"
+        }
+    },
+
+    loc_vars = function(self, info_queue, card)
+        if not G.jokers then return { vars = { "No Joker" } } end
+        local my_pos = nil
+        for i = 1, #G.jokers.cards do
+            if G.jokers.cards[i] == card then
+                my_pos = i
+                break
+            end
+        end
+        local label = "No Joker"
+        if my_pos and my_pos > 1 then
+            local other = G.jokers.cards[my_pos - 1]
+            if other then
+                label = other.config.center.blueprint_compat
+                    and (other.ability.name or "Unknown")
+                    or  "Incompatible"
+            end
+        end
+        return { vars = { label } }
+    end,
+
+    calculate = function(self, card, context)
+        local my_pos = nil
+        for i = 1, #G.jokers.cards do
+            if G.jokers.cards[i] == card then
+                my_pos = i
+                break
+            end
+        end
+
+        if not my_pos or my_pos <= 1 then return end
+        local other = G.jokers.cards[my_pos - 1]
+        if not other or not other.config.center.blueprint_compat then return end
+
+        local result = SMODS.blueprint_effect(card, other, context)
+
+        if result and type(result) == "table" then
+            local halve_fields = {
+                "mult_mod", "chip_mod",
+                "Xmult_mod", "Xchip_mod",
+                "Emult_mod", "Echip_mod",
+                "mult", "chips",
+                "x_mult", "x_chips",
+                "dollars", "p_dollars"
+            }
+            for _, field in ipairs(halve_fields) do
+                if type(result[field]) == "number" then
+                    result[field] = result[field] / 2
+                end
+            end
+            if type(result.repetitions) == "number" then
+                result.repetitions = math.max(1, math.floor(result.repetitions / 2))
+            end
+            return result
+        end
+
+        return result
+    end
+}
